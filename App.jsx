@@ -1,5 +1,7 @@
 import React from "react";
 
+const add = "192.168.1.10:5000"; //change ip acc to your local ip.
+
 class UI extends React.Component {
 	constructor() {
 		super();
@@ -34,7 +36,7 @@ class UI extends React.Component {
 		};
 		if (e.target.value.length >= 13) {
 			fetch(
-				"http://10.1.10.254:5000/" +
+				add +
 					e.target.value.replace("-", "").replace("-", ""),
 				requestOptions
 			)
