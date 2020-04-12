@@ -1,5 +1,7 @@
 import React from "react";
 
+const add = "192.168.1.10:5000"; //change ip acc to your local ip.
+
 class UI extends React.Component {
 	constructor() {
 		super();
@@ -13,13 +15,13 @@ class UI extends React.Component {
 				bill_status: "",
 			},
 
-			usage: {
-				uptime: "",
-				data: "",
-				speed: "",
-			},
+			host: { ip: "", mac: "" },
+			data: { upload: "", download: "" },
+			bandwidth: "",
+			active_time: "",
 			error: "",
 		};
+		this.nic = React.createRef();
 	}
 
 	componentDidMount() {}
@@ -28,24 +30,14 @@ class UI extends React.Component {
 		if (this.state.error.length > 0) {
 			this.setState({ error: "" });
 		}
-
-		if (e.target.value.length >= 13) {
-			this.load();
-		}
-	};
-
-	load = () => {
 		var requestOptions = {
 			method: "GET",
 			redirect: "follow",
 		};
-		if (document.getElementById("input").value.length >= 13) {
+		if (e.target.value.length >= 13) {
 			fetch(
-				"http://10.1.10.254:5000/" +
-					document
-						.getElementById("input")
-						.value.replace("-", "")
-						.replace("-", ""),
+				add +
+					e.target.value.replace("-", "").replace("-", ""),
 				requestOptions
 			)
 				.then((response) => response.text())
@@ -55,25 +47,24 @@ class UI extends React.Component {
 	};
 
 	render() {
-		let per = Number.parseFloat(this.state.usage.speed.split(" "));
-		let val = this.state.usage.speed.includes("k")
-			? this.state.user.pkg[0] * 1000
-			: this.state.usage.speed.includes("M")
-			? this.state.user.pkg[0]
-			: this.state.user.pkg[0] * 1000 * 1000;
-		per = Math.floor((per / val) * 100 * 100) / 100;
-		let data = Number.parseFloat(this.state.usage.data.substr(0, 4));
+		let data =
+			Math.floor(
+				((this.state.data.download + this.state.data.upload) /
+					1024 /
+					1024 /
+					1024) *
+					100
+			) / 100;
 		let total = this.state.user.pkg.substr(5, 7);
 		let bill =
 			Number.parseInt(this.state.user.pre_dues) +
 			Number.parseInt(this.state.user.current_bill);
-		total = Math.floor((Number.parseFloat(total) - data) * 100) / 100;
+		total = Math.floor((Number.parseInt(total) - data) * 100) / 100;
 		return (
 			<fieldset>
 				<legend>
 					<label>NIC#</label>
-					<input type="text" onChange={this.showData} id="input"></input>
-					<button onClick={this.load}>Refresh</button>
+					<input type="text" onChange={this.showData} ref={this.nic}></input>
 				</legend>
 				<br></br>
 				<label style={{ color: "red" }}>{this.state.error}</label>
@@ -82,13 +73,14 @@ class UI extends React.Component {
 						<h3>User Info</h3>
 					</legend>
 					<div>Name: {this.state.user.name}</div>
+					<div>Device MAC: {this.state.host.mac}</div>
 					<div>Current Package: {this.state.user.pkg}</div>
 				</fieldset>
 				<fieldset>
 					<legend>
-						<h3>Usage</h3>
+						<h3>Stats</h3>
 					</legend>
-					<h3>Up Time: {this.state.usage.uptime}</h3>
+					<h3>Active Time: {this.state.active_time}</h3>
 					<h3>
 						Remaining Data:{" "}
 						{isNaN(total) ? (
@@ -103,30 +95,8 @@ class UI extends React.Component {
 						<u>
 							Total Data Used:{" "}
 							<span style={{ color: "red" }}>
-								{isNaN(data) ? "" : data + " GB"}
+								{data === 0 ? "" : data + " GB"}
 							</span>
-						</u>
-					</h2>
-					<h2>
-						<u>
-							Current Speed Usage: <b>{this.state.usage.speed}</b>
-							{isNaN(per) ? (
-								""
-							) : per <= 50 ? (
-								<span style={{ color: "blue" }}>
-									<i>{"( " + per + "% )"}</i>
-								</span>
-							) : per <= 75 ? (
-								<span style={{ color: "orange" }}>
-									<i>{"( " + per + "% )"}</i>
-								</span>
-							) : (
-								<span style={{ color: "red" }}>
-									<i>
-										<b>{"( " + per + "% )"}</b>
-									</i>
-								</span>
-							)}
 						</u>
 					</h2>
 				</fieldset>
