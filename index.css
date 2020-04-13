@@ -1,0 +1,10 @@
+@media only screen and (min-width: 600px) {
+	body {
+		background-color: rgb(215, 221, 236);
+	}
+	#root {
+		margin: auto;
+		max-width: 600px;
+		padding: 10px;
+	}
+}
